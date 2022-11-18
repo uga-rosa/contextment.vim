@@ -1,0 +1,41 @@
+*contextment.txt*
+
+==============================================================================
+INTRODUCTION                                          *contextment-introduction*
+
+A plugin for comment out sensitively context.
+I refer to vim-commentary.
+https://github.com/tpope/vim-commentary
+
+Requirements
+- context_filetype.vim
+  https://github.com/Shougo/context_filetype.vim
+
+
+==============================================================================
+MAPPINGS                                                  *contextment-mappings*
+
+This plugin provides only <Plug> mappings to avoid mapping conflicts.
+
+                                                           *<Plug>(contextment)*
+<Plug>(contextment)
+	In normal mode, comment or uncomment lines that motion moves over.
+	In visual mode, comment or uncomment the selected lines.
+
+                                                      *<Plug>(contextment-line)*
+<Plug>(contextment-line)
+	Normal mode only.
+	Comment or uncomment [count] lines.
+
+
+==============================================================================
+COMMANDS                                                  *contextment-commands*
+
+                                                                  *:Contentment*
+:[range]Contextment[!]
+	Comemnt or uncomment [range] lines.
+	[!] is present, it is forced to uncomment.
+
+
+
+vim:tw=78:ts=8:noet:ft=help:norl:
