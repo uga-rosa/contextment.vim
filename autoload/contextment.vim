@@ -23,7 +23,7 @@ function! s:surroundings(line1, line2) abort
       let &ft = &ft
     endif
   endif
-  return map(split(get(b:, 'contextment_format', commentstring), '%s', 1), 'trim(v:val)')
+  return map(split(commentstring, '%s', 1), 'trim(v:val)')
 endfunction
 
 function! contextment#do(...) abort
@@ -45,7 +45,7 @@ function! contextment#do(...) abort
     " If there is even one line that is neither a blank line nor a comment line, not uncomment.
     let uncomment = 1
     for line in lines
-      if line !~# '^\s*$' && (line !~# '^\s*' . l || line !~# r . '$')
+      if line !~# '^\s*$' && (line !~# '\V\^\s\*' . l || line !~# '\V' . r . '\$')
         let uncomment = 0
         break
       endif
@@ -62,7 +62,7 @@ function! contextment#do(...) abort
       let line = indent . substitute(substitute(line, '\V\^' . l . '\s\?', '', ''), '\V\s\?' . r . '\$', '', '')
     elseif line !~# '^\s*$'
       " Ignore blank line
-      let indent = line =~# '^' . first_indent ? first_indent : matchstr(line, '^\s*')
+      let indent = line =~# '\V\^' . first_indent ? first_indent : matchstr(line, '^\s*')
       let line = line[strlen(indent):]
       let line = indent . l . ' ' . line . ' ' . r
     endif
