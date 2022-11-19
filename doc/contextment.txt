@@ -3,7 +3,7 @@
 ==============================================================================
 INTRODUCTION                                          *contextment-introduction*
 
-A plugin for comment out sensitively context.
+A plugin for context-sensitive comment out.
 I refer to vim-commentary.
 https://github.com/tpope/vim-commentary
 
