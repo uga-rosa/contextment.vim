@@ -27,6 +27,14 @@ function! s:surroundings(line1, line2) abort
   return map(split(commentstring, '%s', 1), 'trim(v:val)')
 endfunction
 
+function! s:is_blank(line) abort
+  return a:line =~# '^\s*$'
+endfunction
+
+function! s:is_comment(line, l, r) abort
+  return a:line =~# '\V\^\s\*' . a:l . '\.\*' . a:r . '\$'
+endfunction
+
 function! contextment#do(...) abort
   if a:0 == 0
     let &operatorfunc = 'contextment#do'
@@ -47,8 +55,7 @@ function! contextment#do(...) abort
     " line, not uncomment.
     let uncomment = 1
     for line in lines
-      if line !~# '^\s*$' &&
-            \ (line !~# '\V\^\s\*' . l || line !~# '\V' . r . '\$')
+      if !s:is_blank(line) && !s:is_comment(line, l, r)
         let uncomment = 0
         break
       endif
@@ -59,13 +66,14 @@ function! contextment#do(...) abort
 
   let lines_new = []
   for line in lines
-    if uncomment
+    if s:is_blank(line)
+      " Ignore blank line
+    elseif uncomment
       let indent = matchstr(line, '^\s*')
       let line = line[strlen(indent):]
       let line = indent . substitute(substitute(
             \ line, '\V\^' . l . '\s\?', '', ''), '\V\s\?' . r . '\$', '', '')
-    elseif line !~# '^\s*$'
-      " Ignore blank line
+    else
       let indent = matchstr(line, '^\%(' . first_indent . '\|\s*\)')
       let line = line[strlen(indent):]
       let line = indent . l . ' ' . line . ' ' . r
