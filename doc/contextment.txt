@@ -21,6 +21,7 @@ This plugin provides only <Plug> mappings to avoid mapping conflicts.
 <Plug>(contextment)
 	In normal mode, comment or uncomment lines that motion moves over.
 	In visual mode, comment or uncomment the selected lines.
+	In operator mode, select commented lines.
 
                                                       *<Plug>(contextment-line)*
 <Plug>(contextment-line)

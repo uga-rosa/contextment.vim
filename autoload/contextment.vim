@@ -1,9 +1,3 @@
-function! s:has_context_filetype() abort
-  let has = 0
-  silent! let has = context_filetype#version()
-  return has
-endfunction
-
 function! s:load_ftplugin(ft) abort
   unlet b:did_ftplugin
   execute 'runtime!' printf(
@@ -15,14 +9,12 @@ endfunction
 
 function! s:surroundings(line1, line2) abort
   let commentstring = &commentstring
-  if s:has_context_filetype()
-    let context = context_filetype#get()
-    if context.filetype !=# &ft &&
-          \ context.range[0][0] <= a:line1 && a:line2 <= context.range[1][0]
-      call s:load_ftplugin(context.filetype)
-      let commentstring = &commentstring
-      call s:load_ftplugin(&ft)
-    endif
+  let context = context_filetype#get()
+  if context.filetype !=# &ft &&
+        \ context.range[0][0] <= a:line1 && a:line2 <= context.range[1][0]
+    call s:load_ftplugin(context.filetype)
+    let commentstring = &commentstring
+    call s:load_ftplugin(&ft)
   endif
   return map(split(commentstring, '%s', 1), 'trim(v:val)')
 endfunction
@@ -51,8 +43,7 @@ function! contextment#do(...) abort
   let lines = getline(lnum1, lnum2)
 
   if !uncomment
-    " If there is even one line that is neither a blank line nor a comment
-    " line, not uncomment.
+    " If there is even one line that is neither a blank line nor a comment line, not uncomment.
     let uncomment = 1
     for line in lines
       if !s:is_blank(line) && !s:is_comment(line, l, r)
@@ -63,7 +54,6 @@ function! contextment#do(...) abort
   endif
 
   let first_indent = matchstr(lines[0], '^\s*')
-
   let lines_new = []
   for line in lines
     if s:is_blank(line)
@@ -81,6 +71,41 @@ function! contextment#do(...) abort
     call add(lines_new, line)
   endfor
   call setline(lnum1, lines_new)
-
   return ''
+endfunction
+
+function! s:find_range(l, r, lnum, inner) abort
+  let [l, r] = [a:l, a:r]
+  " The actual examination begins with the next line (+0/-1).
+  " The reason why it is not +2/-2 is that it is unnecessary to check the same row (lnum) twice.
+  let lnums = [a:lnum+1, a:lnum-2]
+  " Find the start row upward and the end row downward.
+  for [index, dir, bound, line] in [[0, -1, 1, ''], [1, 1, line('$'), '']]
+    while lnums[index] != bound && s:is_blank(line) || s:is_comment(line, l, r)
+      let lnums[index] += dir
+      let line = getline(lnums[index] + dir)
+    endwhile
+    while a:inner && s:is_blank(getline(lnums[index]))
+      let lnums[index] -= dir
+    endwhile
+  endfor
+  return lnums
+endfunction
+
+function! contextment#textobject(inner) abort
+  let lnum = line('.')
+  let [l, r] = s:surroundings(lnum, lnum)
+  let [start, end] = s:find_range(l, r, lnum, a:inner)
+  let context = context_filetype#get()
+  if context.filetype !=# &ft
+    let start = max([start, context.range[0][0]])
+    let end = min([end, context.range[1][0]])
+    if start > end
+      let [l, r] = map(split(&commentstring, '%s', 1), 'trim(v:val)')
+      let [start, end] = s:find_range(l, r, lnum, a:inner)
+    endif
+  endif
+  if start <= end
+    exe 'normal!' start . 'GV' . end . 'G'
+  endif
 endfunction
