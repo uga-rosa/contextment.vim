@@ -66,10 +66,7 @@ function! contextment#do(...) abort
     else
       let indent = matchstr(line, '^\%(' . first_indent . '\|\s*\)')
       let line = line[strlen(indent):]
-      let line = indent . l . ' ' . line
-      if !empty(r)
-        let line = line . ' ' . r
-      endif
+      let line = indent . l . ' ' . line . (r ? ' ' . r : '')
     endif
     call add(lines_new, line)
   endfor
