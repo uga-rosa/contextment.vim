@@ -7,14 +7,17 @@ function! s:load_ftplugin(ft) abort
   let b:did_ftplugin = 1
 endfunction
 
-function! s:surroundings(line1, line2) abort
+function! s:surroundings(...) abort
   let commentstring = &commentstring
-  let context = context_filetype#get()
-  if context.filetype !=# &ft &&
-        \ context.range[0][0] <= a:line1 && a:line2 <= context.range[1][0]
-    call s:load_ftplugin(context.filetype)
-    let commentstring = &commentstring
-    call s:load_ftplugin(&ft)
+  if a:0 > 0
+    let [lnum1, lnum2] = [a:1, a:0 > 1 ? a:2 : a:1]
+    let context = context_filetype#get()
+    if context.filetype !=# &ft &&
+          \ context.range[0][0] <= lnum1 && lnum2 <= context.range[1][0]
+      call s:load_ftplugin(context.filetype)
+      let commentstring = &commentstring
+      call s:load_ftplugin(&ft)
+    endif
   endif
   return map(split(commentstring, '%s', 1), 'trim(v:val)')
 endfunction
@@ -94,14 +97,14 @@ endfunction
 
 function! contextment#textobject(inner) abort
   let lnum = line('.')
-  let [l, r] = s:surroundings(lnum, lnum)
+  let [l, r] = s:surroundings(lnum)
   let [start, end] = s:find_range(l, r, lnum, a:inner)
   let context = context_filetype#get()
   if context.filetype !=# &ft
     let start = max([start, context.range[0][0]])
     let end = min([end, context.range[1][0]])
     if start > end
-      let [l, r] = map(split(&commentstring, '%s', 1), 'trim(v:val)')
+      let [l, r] = s:surroundings()
       let [start, end] = s:find_range(l, r, lnum, a:inner)
     endif
   endif
