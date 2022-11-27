@@ -1,7 +1,7 @@
 function! s:load_ftplugin(ft) abort
   unlet b:did_ftplugin
   execute 'runtime!' printf(
-        \ 'ftplugin/%s.vim ftplugin/%s_*.vim ftplugin/%s/*.vim' .
+        \ 'ftplugin/%s.vim ftplugin/%s_*.vim ftplugin/%s/*.vim ' .
         \ 'ftplugin/%s.lua ftplugin/%s_*.lua ftplugin/%s/*.lua',
         \ a:ft, a:ft, a:ft, a:ft, a:ft, a:ft)
   let b:did_ftplugin = 1
